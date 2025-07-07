@@ -2,7 +2,7 @@
 #include "Modules/sqlite3.h"
 #include <string>
 #include <vector>
-
+#include <fstream>
 
 using namespace std;
 
@@ -13,8 +13,8 @@ void BUFFER_CLEANER(){
 
 vector<long long int> SQL_DATOS(const char Ruta[], string Consulta);
 
-void Quick_Sort(long long int *numeros, int incio, int final);
-int Particion(long long int *numeros, int incio, int final);
+void Quick_Sort(long long int *numeros, int inicio, int final);
+int Particion(long long int *numeros, int inicio, int final);
 
 
 int main(){
@@ -51,7 +51,28 @@ int main(){
     //Obteniendo la data 
     vector<long long int> Resultados = SQL_DATOS(Ruta,consulta);
 
+    cout << "quieres los datos ordenados ascendentemente? Si(1):";
+    int opcion,indice = Resultados.size()-1;
+    cin >> opcion;
+    if (opcion == 1){
+        Quick_Sort(Resultados.data(),0,indice);
+    }
+    BUFFER_CLEANER();
 
+    //Escribiendo los datos al archivo binario
+    ofstream archivo("../pipe.bin",ios::binary| ios::trunc);
+
+    if(archivo.fail()){
+        cerr << "ERROR CON EL ARCHIVO BINARIO" << endl;
+        return 1;
+    }
+    //encabezado
+    size_t tam = Resultados.size();
+    archivo.write(reinterpret_cast<const char*>(&tam),sizeof(tam));
+    //datos
+    archivo.write(reinterpret_cast<const char*>(Resultados.data()),tam * sizeof(long long int));
+
+    archivo.close();
     return 0;
 }
 
@@ -59,26 +80,26 @@ int main(){
 void Quick_Sort(long long int *numeros, int inicio, int final){
     if(final <= inicio){return;}
 
-    int pivote = Particion(numeros,inicio,final);
+    long long int pivote = Particion(numeros,inicio,final);
 
     Quick_Sort(numeros,inicio,pivote-1);
     Quick_Sort(numeros, pivote+1,final);
 
 }
 int Particion(long long int *numeros, int inicio, int final){
-    int pivote = numeros[final];
+    long long int pivote = numeros[final];
     int i = inicio-1;
 
-    for (int j = 0; j<=pivote; j++){
+    for (int j = inicio; j<final; j++){
         if (numeros[j] <= pivote){
             i++;
-            int temp = numeros[i];
+            long long int temp = numeros[i];
             numeros[i] = numeros[j];
             numeros[j] = temp;
         }
     }
     i++;
-    int temp = numeros[i];
+    long long int temp = numeros[i];
     numeros[i] = numeros[final];
     numeros[final] = temp;
 

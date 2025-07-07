@@ -6,6 +6,11 @@
 
 using namespace std;
 
+typedef struct{
+    long long int numero;
+    int aparaciones;
+} Num_Aparicion;
+
 void BUFFER_CLEANER(){
     char c;
     while((c = cin.get()) != '\n' && c != EOF);
@@ -51,14 +56,6 @@ int main(){
     //Obteniendo la data 
     vector<long long int> Resultados = SQL_DATOS(Ruta,consulta);
 
-    cout << "quieres los datos ordenados ascendentemente? Si(1):";
-    int opcion,indice = Resultados.size()-1;
-    cin >> opcion;
-    if (opcion == 1){
-        Quick_Sort(Resultados.data(),0,indice);
-    }
-    BUFFER_CLEANER();
-
     //Escribiendo los datos al archivo binario
     ofstream archivo("../pipe.bin",ios::binary| ios::trunc);
 
@@ -66,12 +63,43 @@ int main(){
         cerr << "ERROR CON EL ARCHIVO BINARIO" << endl;
         return 1;
     }
-    //encabezado
+    //longitud de los datos
     size_t tam = Resultados.size();
     archivo.write(reinterpret_cast<const char*>(&tam),sizeof(tam));
     //datos
     archivo.write(reinterpret_cast<const char*>(Resultados.data()),tam * sizeof(long long int));
 
+    //Apariciones de numeros
+    Quick_Sort(Resultados.data(),0,(int)tam-1);
+
+    //array de Num_Aparicion
+    size_t aparaciones_diferentes = 1;
+    vector<Num_Aparicion> Numeros_apariciones;
+    Numeros_apariciones.resize(aparaciones_diferentes);
+    Numeros_apariciones[0].numero = Resultados[0];
+    Numeros_apariciones[0].aparaciones = 1;
+
+    //rellenando el array 
+    for (int i = 1; i<tam; i++){
+        if(Resultados[i] != Numeros_apariciones[(int)aparaciones_diferentes-1].numero){
+            aparaciones_diferentes++;
+            Numeros_apariciones.resize(aparaciones_diferentes);
+            Numeros_apariciones[(int)aparaciones_diferentes-1].numero = Resultados[i];
+            Numeros_apariciones[(int)aparaciones_diferentes-1].aparaciones = 1;
+        }
+        Numeros_apariciones[(int)aparaciones_diferentes-1].aparaciones += 1;
+    }
+
+    //encabezado de structs
+    archivo.write(reinterpret_cast<const char*>(&aparaciones_diferentes),sizeof(aparaciones_diferentes));
+
+    //escribien el array de struct
+    for(int i = 0; i<aparaciones_diferentes;i++){
+        //numero
+        archivo.write(reinterpret_cast<const char*>(&Numeros_apariciones[i].numero),sizeof(long long int));
+        //aparaciones
+        archivo.write(reinterpret_cast<const char*>(&Numeros_apariciones[i].aparaciones),sizeof(int));
+    }
     archivo.close();
     return 0;
 }

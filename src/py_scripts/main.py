@@ -1,6 +1,6 @@
 import struct
-import numpy as np
-import matplotlib.pyplot as plt
+#import numpy as np
+#import matplotlib.pyplot as plt
 
 ruta_bin = "../pipe.bin"
 
@@ -11,22 +11,29 @@ with open(ruta_bin,"rb") as file:
     encabezado = struct.unpack("<q",encabezado_by)[0]
 
     #array
-    array = np.fromfile(ruta_bin, dtype=np.int64, offset=8) #no incluye el encabeza
+    array_by = file.read(encabezado * 8)
+    array = struct.unpack(f"<{encabezado}q",array_by)
+
+    #encabezado struct
+    encabezado_struct_by = file.read(8)
+    encabezado_struct = struct.unpack(f"<q",encabezado_struct_by)[0]
+
+    #structs
+    numeros = []
+    apariciones = []
+    for i in range(0,encabezado_struct):
+        #numero
+        num_by = file.read(8)
+        num = struct.unpack("<q",num_by)[0]
+        numeros.append(num)
+
+        #aparaciones
+        aparicion_by = file.read(4)
+        aparicion = struct.unpack("<i",aparicion_by)[0]
+        apariciones.append(aparicion)
 
 print(array)
+print(numeros)
+print(apariciones)
 
 
-#creando el lienzo
-
-#eje x
-x = np.arange(encabezado);
-
-plt.figure(figsize=(10,2)) #ancho y largo
-plt.scatter(x,array,s=1,color="darkblue") #Tipo de grafico "puntos"
-plt.title("Visualizacion de datos")
-plt.xlabel("Indice")
-plt.ylabel("Valor")
-plt.grid(True)
-plt.tight_layout()
-
-plt.show()

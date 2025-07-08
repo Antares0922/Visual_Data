@@ -1,6 +1,6 @@
 import struct
-#import numpy as np
-#import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.pyplot as plt
 
 ruta_bin = "../pipe.bin"
 
@@ -12,7 +12,7 @@ with open(ruta_bin,"rb") as file:
 
     #array
     array_by = file.read(encabezado * 8)
-    array = struct.unpack(f"<{encabezado}q",array_by)
+    array_desordenado = struct.unpack(f"<{encabezado}q",array_by)
 
     #encabezado struct
     encabezado_struct_by = file.read(8)
@@ -32,8 +32,20 @@ with open(ruta_bin,"rb") as file:
         aparicion = struct.unpack("<i",aparicion_by)[0]
         apariciones.append(aparicion)
 
-print(array)
+print(array_desordenado)
 print(numeros)
 print(apariciones)
+
+
+plt.plot(numeros,apariciones)
+
+plt.xlabel("Numeros")
+plt.ylabel("Apariciones")
+
+plt.grid(True)
+
+plt.title("Visualizacion de Datos")
+
+plt.show()
 
 
